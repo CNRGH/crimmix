@@ -1,0 +1,92 @@
+---
+title: "Heatmap of simulated datasets"
+author: "Morgane Pierre-Jean"
+date: "1 mars 2019"
+output: html_document
+vignette: >
+  %\VignetteIndexEntry{Plot simulated datasets}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+  %\VignetteDepends{ComplexHeatmap,RColorBrewer,circlize}
+---
+
+## Define paramaters for simulations
+```{r}
+library(CrIMMix)
+library(dplyr)
+library(ComplexHeatmap)
+library(RColorBrewer)
+library(circlize)
+```
+
+```{r}
+means <- c(2,2,2,2)
+sds <- c(1,1,1,1)
+params <- mapply(function (m, sd) return(c(mean=m, sd=sd)), means, sds, SIMPLIFY=FALSE)
+params_beta <- list(c(mean1=-2, mean2=2, sd1=0.5, sd2=0.5))
+S <- 50
+nclust=4
+n_byClust=c(10,20,5,25)
+```
+
+```{r}
+noiseD1=c(0.2)
+noiseD2=c(0.1)/10
+noiseD3=c(0.1)*3
+props <- c(0.05, 0.1, 0.2)
+```
+
+## Simulations of data sets
+```{r}
+dat1 <- simulateY(nclust=nclust,n_byClust=n_byClust, J=1000,
+                  prop=props[1],params=params, noise=noiseD1)
+Y1 <- dat1$data
+colnames(Y1) <- sprintf("gene%s", 1:ncol(Y1))
+
+
+dat2 <- simulateY(nclust=nclust,n_byClust=n_byClust, J=500, flavor="binary",
+                  params=list(c(p=0.6)), prop=props[2], noise=noiseD2)
+
+Y2 <- dat2$data
+colnames(Y2) <- sprintf("gene%s", 1:ncol(Y2))
+
+dat3 <- simulateY(nclust=nclust,n_byClust=n_byClust, J=5000,
+                  flavor="beta", params=params_beta, prop=props[3], noise=noiseD3)
+Y3 <- dat3$data
+colnames(Y3) <- sprintf("gene%s", 1:ncol(Y3))
+
+
+sim <- list(data= list(dat1=Y1, dat2= Y2,dat3=Y3),
+            biomark = list(dat1=dat1$positive,
+                           dat2=dat2$positive, 
+                           dat3=dat3$positive),
+            true.clust = dat1$true.clusters)
+
+truth <- lapply(lapply(sim$biomark, unlist), unique)
+
+```
+
+
+```{r}
+
+col.true <- brewer.pal(4, "Set3")
+true_col = structure(names = c("C1","C2", "C3","C4"),col.true)
+mat <- dat2$data %>% t
+f2 = colorRamp2(seq(min(mat), max(mat), length = 3), c("blue", "#EEEEEE", "red"),
+                              space = "RGB")
+ha = HeatmapAnnotation(
+                      truth = sim$true.clust,
+                      col = list(truth=true_col),
+                      show_legend = FALSE,
+                      show_annotation_name = TRUE,
+                      )
+ht <- Heatmap(mat,col = f2,
+                  show_row_dend = FALSE,
+                  show_column_dend = FALSE,
+                  cluster_columns=FALSE,
+                  top_annotation = ha,
+                  show_column_names = FALSE)
+    draw(ht,
+         annotation_legend_side = "left", heatmap_legend_side = "left")
+```
+
