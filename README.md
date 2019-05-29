@@ -1,4 +1,4 @@
 # crimmix
 
-Simulation of heterogeneous dataset to compare unsupervised integrative methods.
+Simulation of heterogeneous datasets to compare unsupervised integrative methods.
 
