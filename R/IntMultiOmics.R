@@ -89,7 +89,11 @@ IntMultiOmics <- function(data, method,...){
                   "SGCCA"= doSGCCA,
                   "SNF"= doSNF,
                   "Mocluster"=doMoa,
-                  "MCIA"=doMCIA
+                  "MCIA"=doMCIA,
+                  "LRAcluster"=doLRAcluster,
+                  "CIMLR"=doCIMLR,
+                  "PINSPlus"=doPINSPlus,
+                  "ConsensusClustering"=doConsensusClustering
   )
   res <- doInt(data,...)
   return(res)

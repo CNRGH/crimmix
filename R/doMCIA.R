@@ -5,7 +5,8 @@
 #' @param ncomp Number of components
 #'
 #' @return a list of \code{clust} the clustering of samples and
-#' \code{fit} the results of the method intNMF#' @export
+#' \code{fit} the results of the method MCIA
+#' @export
 #' @export
 #'
 #' @examples

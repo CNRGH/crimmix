@@ -58,10 +58,22 @@ for(ii in seq(along=listBenchmark)){
                                type=c("gaussian", "binomial", "gaussian"), mc.cores = nbCPU)
   saveRDS(iCluster_results, file=file.path(pathMeth_sub, sprintf("iCluster_res.rds")))
   
+  
   print("MOFA")
  # Mofaresults <- lapply(1:length(data_filter), function (dd) {
 #    IntMultiOmics(data_filter[[dd]], method="MOFA", K=K)
 #  }) %>% save(file=file.path(pathMeth_sub, sprintf("MOFA_res.rds")))
-  
+  print("CIMLR")
+  CIMLR_results <- mclapply(data_filter, IntMultiOmics, method="CIMLR", K=K-1, lambda= c(0.03, 0.03,0.03),
+                               type=c("gaussian", "binomial", "gaussian"), mc.cores = nbCPU)
+  saveRDS(CIMLR_results, file=file.path(pathMeth_sub, sprintf("CIMLR_res.rds")))
+  print("LRAcluster")
+  LRAcluster_results <- mclapply(data_filter, IntMultiOmics, method="LRAcluster", K=K-1, lambda= c(0.03, 0.03,0.03),
+                               type=c("gaussian", "binomial", "gaussian"), mc.cores = nbCPU)
+  saveRDS(LRAcluster_results, file=file.path(pathMeth_sub, sprintf("LRAcluster_res.rds")))
+  print("PINSPLUS")
+  PINSPLUS_results <- mclapply(data_filter, IntMultiOmics, method="PINSPLUS", K=K-1, lambda= c(0.03, 0.03,0.03),
+                               type=c("gaussian", "binomial", "gaussian"), mc.cores = nbCPU)
+  saveRDS(PINSPLUS_results, file=file.path(pathMeth_sub, sprintf("PINSPLUS_res.rds")))
 }
 

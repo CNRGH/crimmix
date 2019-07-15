@@ -6,7 +6,7 @@
 #' @param type Data type, which can be gaussian, binomial, poisson, multinomial.
 #'
 #' @return a list of \code{clust} the clustering of samples and
-#' \code{fit} the results of the method intNMF
+#' \code{fit} the results of the method iCluster
 #' @export
 #'
 #' @examples

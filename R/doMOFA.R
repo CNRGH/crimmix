@@ -12,7 +12,6 @@
 #' data <- list(c_1$data , c_2$data , c_3$data)
 #' res <- doMOFA(data,K=4)}
 #' @importFrom dplyr %>%
-#' @import MOFAtools
 doMOFA <- function(data, K){
   data_t <- lapply(data, t)
   MOFAobject <- createMOFAobject(data_t)

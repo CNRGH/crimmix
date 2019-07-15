@@ -15,7 +15,7 @@ doMCIA(data, K, ncomp = 10)
 }
 \value{
 a list of \code{clust} the clustering of samples and
-\code{fit} the results of the method intNMF#' @export
+\code{fit} the results of the method MCIA
 }
 \description{
 doMCIA

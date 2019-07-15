@@ -18,7 +18,7 @@ doiCluster(data, K = 2, lambda = c(0.03, 0.03, 0.03, 0.03),
 }
 \value{
 a list of \code{clust} the clustering of samples and
-\code{fit} the results of the method intNMF
+\code{fit} the results of the method iCluster
 }
 \description{
 doiCluster
