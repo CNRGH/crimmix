@@ -13,11 +13,21 @@ extractPos <- function(fit, method){
                  "MOFA"=extract_MOFA,
                  "SGCCA"= extract_SGCCA,
                  "Mocluster"=extract_Moa,
+                 "CIMLR"=extract_CIMLR
   )
   res <- extract(fit)
   return(res)
 }
 
+extract_CIMLR <- function(fit){
+    selectVars_1 <- fit$selectfeatures$names[fit$selectfeatures$pval<1e-5]
+    k_grid <- stringr::str_extract(pattern="_dat*.",selectVars_1) %>% unlist %>% unique %>% sort()
+    selectVars <- lapply(k_grid, function (kk){
+      idx <- grep(kk, selectVars_1)
+      gsub(kk, "", selectVars_1[idx])
+    })
+  return(selectVars)
+}
 
 extract_iCluster <- function(fit){
   selectVars <- lapply(1:length(fit$beta), function(ii){

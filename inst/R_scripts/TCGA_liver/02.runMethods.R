@@ -31,11 +31,7 @@ true.clust_liver %>% table
 idx.genes.non.mutated <- which(liver_filter$mutation %>% colSums==0)
 liver_filter$mutation <- liver_filter$mutation[, -idx.genes.non.mutated]
 
-Fmeas_snf <- sapply(2:8, function(k){
-  SNFresults <- IntMultiOmics(liver_filter, method = "SNF", K=k)
-  SNFresults$clust %>% FMeasure( predictedClusters=true.clust_liver %>% 
-                                   as.numeric() , silent = FALSE)
-})
+SNFresults <- IntMultiOmics(liver_filter, method = "SNF", K=4)
 saveRDS(SNFresults, "inst/extdata/TCGA/Liver/snf_res.rds")
 
 
