@@ -8,7 +8,7 @@ true.clusters <- mapply(function(n, nnC) {
   rep(1:n, nnC)
 }, nclust,n_by_Clust)
 
-listBenchmark <- list.files(pathDat)
+listBenchmark <- list.files(pathDat)[1:7]
 
 
 ARI_dat <- do.call(rbind, lapply(1:length(listBenchmark), function(ii){
@@ -59,10 +59,8 @@ ARI_dat$method <- ARI_dat$method %>% factor(levels =
 g_adj <- ARI_dat %>% ggplot(aes(x = method, y = ARI, fill = method)) +
   geom_boxplot() + ylab("Adjusted Rand Index") + theme_bw() +
   scale_fill_brewer(palette = "Spectral")+facet_wrap(.~noise, ncol=3, labeller = label_wrap_gen(multi_line=TRUE))+
-  theme(axis.text = element_text(size = 15), strip.text.x = element_text(size = 15), legend.position = "none", axis.title.y = element_blank())+coord_flip()
+  theme(axis.text = element_text(size = 12), strip.text.x = element_text(size = 15), legend.position = "none", axis.title.y = element_blank())+coord_flip()
 
-g <- lemon::reposition_legend(g_adj, 'top left', panel='panel-3-3')
-g
 # define your own tags
 ggsave(filename=file.path(pathFig, "Clust_eval_benchmark.pdf"),g_adj, width=13, height=13)
   

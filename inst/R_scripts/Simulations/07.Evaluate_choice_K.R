@@ -74,8 +74,9 @@ Kbest <- lapply(1:S, function(ii){
   
   
   print("CIMLR")
-  CIMLR_results <- data_filter[[ii]] %>%  CIMLR::CIMLR_Estimate_Number_of_Clusters(NUMC=2:5, cores.ratio = 0)
-  K_CIMLR <- CIMLR_results$K1
+  NUMC <- 2:10
+  CIMLR_results <- lapply(data_filter[[ii]], t)%>%  CIMLR::CIMLR_Estimate_Number_of_Clusters(NUMC=NUMC, cores.ratio = 0)
+  K_CIMLR <- NUMC[which.min(CIMLR_results$K1)]
   
   print("LRAcluster")
   LRAcluster_results <- data_filter[[ii]] %>% IntMultiOmics(method="LRAcluster", K=4, type=c("gaussian", "binary", "gaussian"))
@@ -101,5 +102,21 @@ Kbest <- lapply(1:S, function(ii){
 
 df <- do.call(rbind, Kbest)%>% as.data.frame()
 df <- df %>% mutate(K_best= K_best %>% as.integer) 
+df <- df %>% mutate(method=as.character(method))
+df$method[df$method=="CC"] <- "ConsensusClustering"
+df <- df %>% mutate(method= factor(method, levels =c("SNF",
+                                              "RGCCA",
+                                              "MCIA",
+                                              "intNMF",
+                                              "mixKernel",
+                                              "SGCCA",
+                                              "Mocluster",
+                                              "iClusterPlus",
+                                              "CIMLR",
+                                              "LRACluster",
+                                              "PINSPlus",
+                                              "ConsensusClustering")))
 library(ggplot2)
- df %>% ggplot(aes(x=method, y=K_best)) + geom_boxplot()+theme_bw()
+ g_kbest <- df %>% ggplot(aes(x=method, y=K_best)) + geom_boxplot()+theme_bw()+geom_hline(yintercept=4, col="red", lty="dashed")+theme(legend.position = "none")+coord_flip()
+ g_kbest
+ggsave("../../papers/FigsReview/K_best.eps", g_kbest, width=10, height=5)
