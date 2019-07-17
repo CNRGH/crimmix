@@ -1,10 +1,10 @@
 Package: CrIMMix
 Type: Package
 Title: Multi-omics Integration
-Version: 0.1.8-9000
+Version: 0.1.9-9000
 Author: Morgane Pierre-Jean
 Maintainer: Morgane Pierre-Jean <mpierrejean.pro@gmail.com>
-Description: This packages aims to perfom multi-omics simulations but also to evaluate various integrating methods.
+Description: CrIMMix is an package to CompaRe Intergating Methods for Multi-omICS analysis. It provides simulations but also to evaluate various integrating methods.
 License: CeCILL (>= 2.1)
 Encoding: UTF-8
 LazyData: true

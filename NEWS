@@ -1,5 +1,9 @@
 Package: CrIMMix
 =============
+Version: 0.1.9-9000 [2019-07-15]
+ o Update documentation
+ o Add PINSPLUS, Consensus clustering, LRA cluster, CIMLR according to reviewer's comments
+ 
 Version: 0.1.8-9000 [2019-03-18]
   o Moved data to CrIMMixdata package
   o Renamed to CrIMMix

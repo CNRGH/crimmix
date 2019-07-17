@@ -14,13 +14,21 @@
 #' c_2 <- simulateY(J=2000, prop=0.1, noise=1)
 #' c_3 <- simulateY(J=500, prop=0.1,  noise=0.5)
 #' data <- list(c_1$data , c_2$data , c_3$data)
-#' res <- doCIMLR(data,K=4, K_n=10, sigma=0.5)
+#' res <- doCIMLR(data,K=4)
 #' @import CIMLR
 #' @importFrom dplyr %>%
 doCIMLR <- function (data, K){
   ## TODO !!!
   dat <- lapply(data, t)
-  fit=CIMLR(dat, c= K, cores.ratio = 0)
+  fit=CIMLR(data, c= K, cores.ratio = 0)
+  input_dat <- do.call(rbind,lapply(seq(along=dat), function(dd){
+    ddd <- dat[[dd]]
+    rownames(ddd) <- sprintf("%s_dat%s", rownames(ddd), dd)
+    ddd
+  }))
+  ranks = CIMLR_Feature_Ranking(A=fit$S,X=input_dat)
+  ranks$names <- rownames(input_dat)[ranks$aggR]
+  fit$selectfeatures <- ranks
   res <- list(clust= fit$y$cluster, fit=fit)
   return(res)
 }

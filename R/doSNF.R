@@ -26,6 +26,6 @@ doSNF <- function (data, K,  K_n=10, sigma=0.5){
   })
   W <-  SNF(dat, K_n, K_n)
   clust.SNF = W %>% spectralClustering(K)
-  res <- list(clust=clust.SNF)
+  res <- list(clust=clust.SNF, fit= W)
   return(res)
 }

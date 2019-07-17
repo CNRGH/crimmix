@@ -4,16 +4,14 @@
 \alias{doLRAcluster}
 \title{doLRAcluster}
 \usage{
-doLRAcluster(data, K, K_n = 10, sigma = 0.5)
+doLRAcluster(data, K, type = rep("gaussian", length(data)))
 }
 \arguments{
 \item{data}{List of matrices.}
 
 \item{K}{Number of clusters}
 
-\item{K_n}{Number of nearest neighbors}
-
-\item{sigma}{Variance for local model}
+\item{type}{type of data ("binary","gaussian","poisson") by default gaussian}
 }
 \value{
 a list of \code{clust} the clustering of samples and

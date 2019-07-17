@@ -4,16 +4,12 @@
 \alias{doPINSPlus}
 \title{doPINSPlus}
 \usage{
-doPINSPlus(data, K, K_n = 10, sigma = 0.5)
+doPINSPlus(data, K)
 }
 \arguments{
 \item{data}{List of matrices.}
 
 \item{K}{Number of clusters}
-
-\item{K_n}{Number of nearest neighbors}
-
-\item{sigma}{Variance for local model}
 }
 \value{
 a list of \code{clust} the clustering of samples and
@@ -28,5 +24,5 @@ c_1 <- simulateY(J=1000, prop=0.1, noise=1)
 c_2 <- simulateY(J=2000, prop=0.1, noise=1)
 c_3 <- simulateY(J=500, prop=0.1,  noise=0.5)
 data <- list(c_1$data , c_2$data , c_3$data)
-res <- doSNF(data,K=4, K_n=10, sigma=0.5)
+res <- doPINSPlus(data,K=4, K_n=10, sigma=0.5)
 }

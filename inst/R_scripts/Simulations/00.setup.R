@@ -4,8 +4,8 @@
 library(CrIMMix)
 library(dplyr)
 ## Define path to save results
-pathDat <- R.utils::Arguments$getWritablePath("Data_sim_20181012")
-pathMeth <- R.utils::Arguments$getWritablePath("Data_Results_20181012")
+pathDat <- R.utils::Arguments$getWritablePath("inst/extdata/Data_sim_20181012")
+pathMeth <- R.utils::Arguments$getWritablePath("inst/extdata/Data_Results_20181012")
 ## Number of simulations
 S <- 50
 

@@ -2,7 +2,7 @@
 source("inst/R_scripts/Simulations/00.setup.R")
 pathFig <- R.utils::Arguments$getWritablePath("Figs")
 library("tidyverse")
-methods <- c("SNF", "RGCCA", "MCIA", "NMF", "Kernel","SGCCA", "MoCluster","iCluster")
+methods <- c("SNF","CIMLR", "LRAcluster", "PINSPLUS", "ConsensusClustering", "RGCCA", "MCIA", "NMF", "Kernel","SGCCA", "MoCluster","iCluster")
 
 true.clusters <- mapply(function(n, nnC) {
   rep(1:n, nnC)
@@ -23,7 +23,7 @@ ARI_dat <- do.call(rbind, lapply(1:length(listBenchmark), function(ii){
       if (BBmisc::is.error(ss)) {
         return(NA)
       }
-      if (is.na(ss)) {
+      if (is.na(ss)||is.null(ss)) {
         return(NA)
       } else{
         ss$clust  %>% mclust::adjustedRandIndex(true.clusters[[ii]])
@@ -50,7 +50,11 @@ ARI_dat$method <- ARI_dat$method %>% factor(levels =
                                                 "mixKernel",
                                                 "SGCCA",
                                                 "MoCluster",
-                                                "iClusterPlus"))
+                                                "iClusterPlus",
+                                                "CIMLR",
+                                                "LRAcluster",
+                                                "PINSPLUS",
+                                                "ConsensusClustering"))
 
 g_adj <- ARI_dat %>% ggplot(aes(x = method, y = ARI, fill = method)) +
   geom_boxplot() + ylab("Adjusted Rand Index") + theme_bw() +
@@ -58,7 +62,7 @@ g_adj <- ARI_dat %>% ggplot(aes(x = method, y = ARI, fill = method)) +
   theme(axis.text = element_text(size = 15), strip.text.x = element_text(size = 15), legend.position = "none", axis.title.y = element_blank())+coord_flip()
 
 g <- lemon::reposition_legend(g_adj, 'top left', panel='panel-3-3')
-
+g
 # define your own tags
 ggsave(filename=file.path(pathFig, "Clust_eval_benchmark.pdf"),g_adj, width=13, height=13)
   
