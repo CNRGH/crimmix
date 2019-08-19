@@ -57,20 +57,24 @@ Kbest <- lapply(1:S, function(ii){
   K_RGCCA <- res.nbclust$Best.nc[1,] %>% table %>% which.max %>% names
   
   print("NMF")
-  #NMFresults <- data_filter[[1]] %>%  IntMultiOmics(method="intNMF", K=K)
-  ##@ TODO
+  dat <- lapply(data_filter[[ii]], function (dd){
+    if (!all(dd>=0)) dd <- pmax(dd + abs(min(dd)), .Machine$double.eps)
+    dd <- dd/max(dd)
+    return(dd %>% as.matrix)
+  })
+  NMFresults <- IntNMF::nmf.opt.k(dat[c(1,3)], k.range=2:8, n.runs=5, progress = TRUE)
+  K_intNMF <- gsub("k", "", NMFresults %>% rowMeans %>% which.max %>% names)
+  
   print("SGCCA")
   SGCCAresults <- data_filter[[ii]] %>% IntMultiOmics( method="SGCCA", K=K, c1= c(0.3, 0.3,0.4),
-                                                      ncomp=rep(3, 3))
+                                                       ncomp=rep(3, 3))
   scr <-  do.call(cbind, SGCCAresults$fit$Y)
   res.nbclust <- NbClust(scr, distance = "euclidean",
                          min.nc = 2, max.nc = 10, 
                          method = "ward.D2", index ="all")
   K_SGCCA <- res.nbclust$Best.nc[1,] %>% table %>% which.max %>% names
   print("icluster")
-  #iCluster_results <- data_filter[[1]] %>% IntMultiOmics(method="iCluster", K=K-1, lambda= c(0.03, 0.03,0.03),
-  #                             type=c("gaussian", "binomial", "gaussian"))
-  ## TODO
+  print("lirac")
   
   
   print("CIMLR")
@@ -95,28 +99,43 @@ Kbest <- lapply(1:S, function(ii){
   ConsensusClustering_results <- data_filter[[ii]] %>% IntMultiOmics(method="ConsensusClustering", K=10)
   
   K_CC <- ConsensusClustering_results$fit[[1]] %>% nrow
-  K_best <- c(K_SNF, K_MCIA, K_mixKernel, K_Moa, K_SGCCA, K_RGCCA, K_CIMLR, K_LRA, K_PINSPLUS, K_CC)
-  df <- cbind(K_best,method= c("SNF", "MCIA", "mixKernel", "Mocluster", "SGCCA", "RGCCA", "CIMLR", "LRACluster", "PINSPlus", "CC"))
+  K_best <- c(K_SNF, K_MCIA, K_mixKernel, K_Moa, K_SGCCA, K_RGCCA, K_CIMLR, K_LRA, K_PINSPLUS, K_CC, K_intNMF)
+  df <- cbind(K_best,method= c("SNF", "MCIA", "mixKernel", "Mocluster", "SGCCA", "RGCCA", "CIMLR", "LRACluster", "PINSPlus", "ConsensusClustering", "intNMF"))
+})
+
+## Collapse with iCluster Results
+icluster_kbest <- readRDS("inst/extdata/k_best_data.rds")
+
+Kbest_all <- lapply(1:S, function (s){
+  BIC = iClusterPlus::getBIC(icluster_kbest[[s]])
+  nK = length(icluster_kbest[[s]])
+  devRatMinBIC = rep(NA,nK)
+  for(i in 1:nK){
+    devRatMinBIC[i] = devR[minBICid[i],i]
+  }
+  ### Here iclsuter extraction
+  K_icluster <- c(K_best=diff(c(0,devRatMinBIC)) %>% abs %>% which.min ,method="iClusterPlus")
+  rbind(Kbest[[s]],K_icluster)
 })
 
 
-df <- do.call(rbind, Kbest)%>% as.data.frame()
+df <- do.call(rbind, Kbest_all)%>% as.data.frame()
 df <- df %>% mutate(K_best= K_best %>% as.integer) 
 df <- df %>% mutate(method=as.character(method))
-df$method[df$method=="CC"] <- "ConsensusClustering"
 df <- df %>% mutate(method= factor(method, levels =c("SNF",
-                                              "RGCCA",
-                                              "MCIA",
-                                              "intNMF",
-                                              "mixKernel",
-                                              "SGCCA",
-                                              "Mocluster",
-                                              "iClusterPlus",
-                                              "CIMLR",
-                                              "LRACluster",
-                                              "PINSPlus",
-                                              "ConsensusClustering")))
+                                                     "LRACluster",
+                                                     "PINSPlus",
+                                                     "ConsensusClustering",
+                                                     "RGCCA",
+                                                     "MCIA",
+                                                     "intNMF",
+                                                     "mixKernel",
+                                                     "SGCCA",
+                                                     "Mocluster",
+                                                     "iClusterPlus",
+                                                     "CIMLR"
+)))
 library(ggplot2)
- g_kbest <- df %>% ggplot(aes(x=method, y=K_best)) + geom_boxplot()+theme_bw()+geom_hline(yintercept=4, col="red", lty="dashed")+theme(legend.position = "none")+coord_flip()
- g_kbest
+g_kbest <- df %>% ggplot(aes(x=method, y=K_best)) + geom_boxplot()+theme_bw()+geom_hline(yintercept=4, col="red", lty="dashed")+theme(legend.position = "none", axis.text.x = element_text(size=10, angle=90))+scale_y_continuous(breaks=1:10,name="number of clusters")
+g_kbest
 ggsave("../../papers/FigsReview/K_best.eps", g_kbest, width=10, height=5)

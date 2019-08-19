@@ -2,7 +2,7 @@ library("parallel")
 source("inst/R_scripts/Simulations/00.setup.R")
 listBenchmark <- list.files(pathDat)
 nbCPU <- 2
-for(ii in seq(along=listBenchmark)[6:8]){
+for(ii in seq(along=listBenchmark)){
   b <- listBenchmark[ii]
   K <- nclust[ii]
   pathDat_sim <- R.utils::Arguments$getWritablePath(sprintf("%s/%s", pathDat, b))
@@ -67,15 +67,15 @@ for(ii in seq(along=listBenchmark)[6:8]){
   CIMLR_results <- lapply(data_filter, IntMultiOmics, method="CIMLR", K=K)
   saveRDS(CIMLR_results, file=file.path(pathMeth_sub, sprintf("CIMLR_res.rds")))
   
-  print("LRAcluster")
-  LRAcluster_results <- lapply(data_filter, IntMultiOmics, method="LRAcluster", K=K, type=c("gaussian", "binary", "gaussian"))
-  saveRDS(LRAcluster_results, file=file.path(pathMeth_sub, sprintf("LRAcluster_res.rds")))
-  print("PINSPLUS")
-  PINSPLUS_results <- lapply(data_filter, IntMultiOmics, method="PINSPlus", K=K)
-  saveRDS(PINSPLUS_results, file=file.path(pathMeth_sub, sprintf("PINSPLUS_res.rds")))
-  
-  print("Consensus Clustering")
-  ConsensusClustering_results <- lapply(data_filter, IntMultiOmics, method="ConsensusClustering", K=K)
-  saveRDS(ConsensusClustering_results, file=file.path(pathMeth_sub, sprintf("ConsensusClustering_res.rds")))
+  # print("LRAcluster")
+  # LRAcluster_results <- lapply(data_filter, IntMultiOmics, method="LRAcluster", K=K, type=c("gaussian", "binary", "gaussian"))
+  # saveRDS(LRAcluster_results, file=file.path(pathMeth_sub, sprintf("LRAcluster_res.rds")))
+  # print("PINSPLUS")
+  # PINSPLUS_results <- lapply(data_filter, IntMultiOmics, method="PINSPlus", K=K)
+  # saveRDS(PINSPLUS_results, file=file.path(pathMeth_sub, sprintf("PINSPLUS_res.rds")))
+  # 
+  # print("Consensus Clustering")
+  # ConsensusClustering_results <- lapply(data_filter, IntMultiOmics, method="ConsensusClustering", K=K)
+  # saveRDS(ConsensusClustering_results, file=file.path(pathMeth_sub, sprintf("ConsensusClustering_res.rds")))
 }
 

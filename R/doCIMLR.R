@@ -18,9 +18,9 @@
 #' @import CIMLR
 #' @importFrom dplyr %>%
 doCIMLR <- function (data, K){
-  ## TODO !!!
   dat <- lapply(data, t)
-  fit=CIMLR(data, c= K, cores.ratio = 0)
+  fit=CIMLR(dat, c= K, cores.ratio = 0)
+  print("clustering done")
   input_dat <- do.call(rbind,lapply(seq(along=dat), function(dd){
     ddd <- dat[[dd]]
     rownames(ddd) <- sprintf("%s_dat%s", rownames(ddd), dd)
@@ -29,6 +29,7 @@ doCIMLR <- function (data, K){
   ranks = CIMLR_Feature_Ranking(A=fit$S,X=input_dat)
   ranks$names <- rownames(input_dat)[ranks$aggR]
   fit$selectfeatures <- ranks
+  print("feature selection done")
   res <- list(clust= fit$y$cluster, fit=fit)
   return(res)
 }

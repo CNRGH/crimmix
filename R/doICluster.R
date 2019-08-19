@@ -20,7 +20,10 @@
 #' @importFrom dplyr %>%
 doiCluster <- function (data,  K=2, lambda = c(0.03, 0.03, 0.03, 0.03),
                          type=rep("gaussian", length(data))){
-  names(data) <- sprintf("dat%s", 1:length(data))
+  
+  if(is.null(names(data))){
+    names(data) <- sprintf("dat%s", 1:length(data))
+  }
   n_dat <- length(data)
   if(n_dat>4){
     stop('iCluster do not deal with more than 4 data sets')

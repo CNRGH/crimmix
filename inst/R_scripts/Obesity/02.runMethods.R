@@ -13,7 +13,7 @@ pca_2 <- pca(X = new_dat$miRNA)
 pca_2 %>% plotIndiv(group = true.clust_diab)
 
 pca_3 <- pca(X = new_dat$mRNA, ncomp = 4)
-pca_3 %>% plotIndiv(group = true.clust_diab, comp=c(1,4))
+pca_3 %>% plotIndiv(group = true.clust_diab, comp = c(1,4))
 
 
 c_1 <- (2/sqrt((new_dat %>% sapply(dim))[2,])) %>% round(3)
@@ -47,11 +47,26 @@ saveRDS(NFMresults, "inst/extdata/Obesity/NMF_res.rds")
 RGCCAresults <- IntMultiOmics(new_dat, method = "RGCCA", K=2, ncomp=rep(2,  length(new_dat)))
 saveRDS(RGCCAresults, "inst/extdata/Obesity/RGCCA_res.rds")
 
-## Be careful iCluster is very slow!!! 
-
+## Be careful iCluster is very slow!!!
 iClusterresults <- IntMultiOmics(new_dat, method = "iCluster", K=1,
                                  lambda=c(0.7, 0.55,0.27)*2)
 iClusterresults$clust %>% table(true.clust_diab)
-
 saveRDS(iClusterresults, "inst/extdata/Obesity/icluster_res.rds")
+
+
+print("CIMLR")
+CIMLR_results <- new_dat %>% IntMultiOmics(method="CIMLR", K=2)
+saveRDS(CIMLR_results, file=file.path(sprintf("inst/extdata/Obesity/CIMLR_res.rds")))
+
+print("LRAcluster")
+LRAcluster_results <- new_dat %>% IntMultiOmics(method="LRAcluster", K=2, type=c("gaussian", "gaussian", "gaussian"))
+saveRDS(LRAcluster_results, file=file.path(sprintf("inst/extdata/Obesity/LRAcluster_res.rds")))
+print("PINSPLUS")
+PINSPLUS_results <- new_dat %>% IntMultiOmics(method="PINSPlus", K=2)
+saveRDS(PINSPLUS_results, file=file.path(sprintf("inst/extdata/Obesity/PINSPLUS_res.rds")))
+
+print("Consensus Clustering")
+ConsensusClustering_results <- new_dat %>% IntMultiOmics(method="ConsensusClustering", K=2)
+saveRDS(ConsensusClustering_results, file=file.path(sprintf("inst/extdata/Obesity/ConsensusClustering_res.rds")))
+
 

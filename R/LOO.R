@@ -29,6 +29,7 @@ LOO <- function(data, method, it.max=NULL,mc.cores=1, ...){
                   "MOFA"=doMOFA,
                   "SGCCA"= doSGCCA,
                   "Mocluster"=doMoa,
+                  "CIMLR"= doCIMLR,
   )
   n <- nrow(data[[1]])
   if(is.null(it.max)){
@@ -40,7 +41,7 @@ LOO <- function(data, method, it.max=NULL,mc.cores=1, ...){
     N <- it.max
   }
 
-  cv <- mclapply(sample(1:N), function(i){
+  cv <- parallel::mclapply(sample(1:N), function(i){
     cat(sprintf("fold: %s", i))
     data_i <- remove_i(data, i)
     res <- doInt(data_i, ...)

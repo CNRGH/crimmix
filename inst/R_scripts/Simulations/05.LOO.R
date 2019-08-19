@@ -4,7 +4,7 @@
 library(CrIMMix)
 library(dplyr)
 
-pathMethLOO <- R.utils::Arguments$getWritablePath("Data_Results_20181012_LOO")
+pathMethLOO <- R.utils::Arguments$getWritablePath("inst/extdata/Data_Results_20181012_LOO")
 source("inst/R_scripts/Simulations/00.setup.R")
 for(ii in 1:4){
   pathDat_sim <- R.utils::Arguments$getWritablePath(sprintf("%s/Benchmark%s", pathDat, ii))
@@ -34,11 +34,36 @@ for(ii in 1:4){
   saveRDS(cv, sprintf("%s/benchmark%s.rds", pathMethLOO,  ii))
 }
 
+for(ii in 1:4){
+  pathDat_sim <- R.utils::Arguments$getWritablePath(sprintf("%s/Benchmark%s", pathDat, ii))
+  print(pathDat_sim)
+  sim <- list.files(pathDat_sim, full.names = TRUE)[[1]] %>% readRDS
+  trueDat1 <- sim$biomark$dat1 %>% unlist %>% unique
+  trueDat2 <-  sim$biomark$dat2 %>% unlist %>% unique
+  trueDat3 <-  sim$biomark$dat3 %>% unlist %>% unique
+  Truth <- list(trueDat1, trueDat2, trueDat3)
+  dat <- sim$data
+  remove_zero <- function (dat){
+    lapply(dat, function(dd){
+      idx <- which(colSums(dd)==0)
+      if(length(idx)!=0){
+        return(dd[, -idx])
+      }else{
+        return(dd)
+      }
+    })
+  }
+  data_filter <- dat %>% remove_zero
+  cv.CIMLR <- LOO(data_filter, K = 4, method = "CIMLR")
+  saveRDS(cv.CIMLR, sprintf("%s/benchmark%s_CIMLR.rds", pathMethLOO,  ii))
+}
+
+
 
 roc_bench <- do.call(rbind, lapply(1:4, function(b){
   cv <- readRDS(sprintf("%s/benchmark%s.rds", pathMethLOO,  b))
   names(cv) <- c("SGCCA", "Mocluster", "iCluster")
-  test <- do.call(rbind, lapply(c("SGCCA", "Mocluster", "iCluster"), function (mm){
+  test <- do.call(rbind, lapply(c("SGCCA", "Mocluster", "iCluster", "CIMLR"), function (mm){
     cv_s <- cv[[mm]]
     
     extract_pos_s<- sapply(cv_s, function (cv_ss){

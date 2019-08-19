@@ -16,12 +16,44 @@ roc_eval <- function(truth, fit, method){
                   "RGCCA" =  doROC_RGCCA,
                   "NMF" =  doROC_intNMF,
                   "MCIA" =  doROC_MCIA,
-                  "Mocluster" = doROC_Moa
+                  "Mocluster" = doROC_Moa, 
+                  "CIMLR" = doROC_CIMLR
   )
   res <- doROC(truth,fit)
   return(res)
 }
 
+doROC_CIMLR <- function(truth, fit){
+  regexp <- "[[:digit:]]+"
+  selectVars_1 <- fit$selectfeatures$names[order(fit$selectfeatures$pval)]
+  k_grid <- stringr::str_extract(pattern="_dat*.",selectVars_1) %>% unlist %>% unique %>% sort()
+  test_o <- lapply(k_grid, function (kk){
+    idx <- grep(kk, selectVars_1)
+    gsub(kk, "", selectVars_1[idx])
+  }) %>% lapply(function (ll) ll %>% str_extract(pattern=regexp))
+  
+  J <- sapply(test_o, length)
+  
+  denom_tp <- sapply(truth, length)
+  TPR_list <-lapply(1:length(test_o), function(ii){
+    tt_o <- test_o[[ii]]
+    sapply(1:length(tt_o), function (tt){
+      t <- 1:tt
+      tpr <- (tt_o[t] %>% intersect(truth[[ii]]) %>% length)/denom_tp[ii]
+    })
+  })
+  
+  FPR_list <- lapply(1:length(test_o), function(ii){
+    tt_o <- test_o[[ii]]
+    sapply(1:length(tt_o), function (tt){
+      t <- 1:tt
+      fpr <- (tt_o[t]%>% setdiff(truth[[ii]]) %>% length)/(J[ii]-denom_tp[ii])
+    })
+  })
+  
+  return(list(TPR = TPR_list, FPR = FPR_list))
+  
+}
 
 doROC_iCluster <- function(truth, fit){
   a <- lapply(1:length(fit$beta), function(ii){

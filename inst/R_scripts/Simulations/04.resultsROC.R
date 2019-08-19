@@ -97,24 +97,35 @@ auc_eval_dat <- do.call(rbind,lapply(1:length(listBenchmark), function(ii){
   l <- list(truth=truth, fits)
   auc_eval_icluster <- purrr::pmap(l, roc_eval, method=mm)  %>% sapply(ComputepAUC) %>% t
   
+  mm <- "CIMLR"
+  pp <- list.files(pathMeth_sub, pattern = mm, full.names = TRUE)
+  ff <- readRDS(pp)
+  print(mm)
+  fits <- lapply(1:S, function (ss) ff[[ss]]$fit )
+  l <- list(truth=truth, fits)
+  auc_eval_CIMLR <- purrr::pmap(l, roc_eval, method=mm)  %>% sapply(ComputepAUC) %>% t
+  
+  
   AUC <- rbind(auc_eval_sgcca,
                auc_eval_moclust,
                auc_eval_icluster,
                auc_eval_rgcca,
                auc_eval_nmf
-               ,auc_eval_mcia)
+               ,auc_eval_mcia, auc_eval_CIMLR)
   nRows <- c(nrow(auc_eval_sgcca),
              nrow(auc_eval_moclust),
              nrow(auc_eval_icluster),
              nrow(auc_eval_rgcca),
              nrow(auc_eval_nmf),
-             nrow(auc_eval_mcia)
+             nrow(auc_eval_mcia), nrow(auc_eval_CIMLR)
   )
-  AUC <- AUC %>% as.data.frame %>% mutate(method = rep(c( "SGCCA", "MoCluster","icluster", "RGCCA", "iNMF", "MCIA"),nRows), noise=b)
+  AUC <- AUC %>% as.data.frame %>% mutate(method = rep(c( "SGCCA", "MoCluster","icluster", "RGCCA", "iNMF", "MCIA", "CIMLR"),nRows), noise=b)
   return(AUC)
 }))
 
+saveRDS(auc_eval_dat, "inst/extdata/Data_Results_20181012/AUC_eval.rds")
 
+auc_eval_dat <- readRDS("inst/extdata/Data_Results_20181012/AUC_eval.rds")
 auc_eval_dat_2 <- auc_eval_dat %>% group_by(noise, method) %>% summarize(MeanD1= mean(`dataset 1`), MeanD2= mean(`dataset 2`), MeanD3= mean(`dataset 3`))
 
 x1 <- auc_eval_dat_2 %>% dplyr::select(method, noise, MeanD1) %>% spread(method, MeanD1)
@@ -122,3 +133,4 @@ x2 <- auc_eval_dat_2 %>% dplyr::select(method, noise, MeanD2) %>% spread(method,
 x3 <- auc_eval_dat_2 %>% dplyr::select(method, noise, MeanD3) %>% spread(method, MeanD3)
 rbind(x1,x2,x3) %>% xtable::xtable()
 auc_eval_dat %>% group_by(method) %>% summarize(MeanD1= mean(`dataset 1`), MeanD2= mean(`dataset 2`), MeanD3= mean(`dataset 3`)) %>% xtable::xtable()
+

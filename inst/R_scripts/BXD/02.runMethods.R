@@ -9,6 +9,8 @@ remove_affy <- grep("Affy", colnames(bxd[[3]]))
 bxd_filtered <- bxd
 bxd_filtered[[3]] <- bxd_filtered[[3]][, -remove_affy]
 true.clust.bxd <- rep(c("CD", "HFD"), each=32)
+
+
 c_1 <- (10/sqrt((bxd_filtered %>% sapply(dim))[2,])) %>% round(2)
 SGCCAresults <- IntMultiOmics(bxd_filtered, method = "SGCCA", K=2, c1=c_1)
 saveRDS(SGCCAresults, "inst/extdata/BXD/sgcca_res.rds")
@@ -22,7 +24,7 @@ saveRDS(MoClusterresults, "inst/extdata/BXD/mocluster_res.rds")
 
 
 
-library(iClusterPlus)
+#library(iClusterPlus)
 ## Run on bioinfo (slow slow slow!!!)
 # cv.fit = iClusterPlus::tune.iClusterPlus(cpus=10,
 #                                          dt1=bxd_filtered[[1]],
@@ -54,4 +56,18 @@ saveRDS(NFMresults, "inst/extdata/BXD/NMF_res.rds")
 RGCCAresults <- IntMultiOmics(bxd_filtered, method = "RGCCA", K=2)
 saveRDS(RGCCAresults, "inst/extdata/BXD/RGCCA_res.rds")
 
+print("CIMLR")
+CIMLR_results <- bxd_filtered %>% IntMultiOmics(method="CIMLR", K=2)
+saveRDS(CIMLR_results, file=file.path(sprintf("inst/extdata/BXD/CIMLR_res.rds")))
+
+print("LRAcluster")
+LRAcluster_results <- bxd_filtered %>% IntMultiOmics(method="LRAcluster", K=2, type=c("gaussian", "gaussian", "gaussian"))
+saveRDS(LRAcluster_results, file=file.path(sprintf("inst/extdata/BXD/LRAcluster_res.rds")))
+print("PINSPLUS")
+PINSPLUS_results <- bxd_filtered %>% IntMultiOmics(method="PINSPlus", K=2)
+saveRDS(PINSPLUS_results, file=file.path(sprintf("inst/extdata/BXD/PINSPLUS_res.rds")))
+
+print("Consensus Clustering")
+ConsensusClustering_results <- bxd_filtered[c(1,3)] %>% IntMultiOmics(method="ConsensusClustering", K=2)
+saveRDS(ConsensusClustering_results, file=file.path(sprintf("inst/extdata/BXD/ConsensusClustering_res.rds")))
 

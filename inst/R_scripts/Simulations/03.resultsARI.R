@@ -8,7 +8,7 @@ true.clusters <- mapply(function(n, nnC) {
   rep(1:n, nnC)
 }, nclust,n_by_Clust)
 
-listBenchmark <- list.files(pathDat)[1:7]
+listBenchmark <- list.files(pathDat)
 
 
 ARI_dat <- do.call(rbind, lapply(1:length(listBenchmark), function(ii){
@@ -44,6 +44,9 @@ ARI_dat$method <- gsub("Kernel", "mixKernel", ARI_dat$method)
 ARI_dat$method <- gsub("iCluster", "iClusterPlus", ARI_dat$method)
 ARI_dat$method <- ARI_dat$method %>% factor(levels =
                                               c("SNF",
+                                                "LRAcluster",
+                                                "PINSPLUS",
+                                                "ConsensusClustering",
                                                 "RGCCA",
                                                 "MCIA",
                                                 "intNMF",
@@ -51,16 +54,14 @@ ARI_dat$method <- ARI_dat$method %>% factor(levels =
                                                 "SGCCA",
                                                 "MoCluster",
                                                 "iClusterPlus",
-                                                "CIMLR",
-                                                "LRAcluster",
-                                                "PINSPLUS",
-                                                "ConsensusClustering"))
+                                                "CIMLR"
+                                                ))
 
 g_adj <- ARI_dat %>% ggplot(aes(x = method, y = ARI, fill = method)) +
   geom_boxplot() + ylab("Adjusted Rand Index") + theme_bw() +
-  scale_fill_brewer(palette = "Spectral")+facet_wrap(.~noise, ncol=3, labeller = label_wrap_gen(multi_line=TRUE))+
+  scale_fill_brewer(palette = "Set3")+facet_wrap(.~noise, ncol=3, labeller = label_wrap_gen(multi_line=TRUE))+
   theme(axis.text = element_text(size = 12), strip.text.x = element_text(size = 15), legend.position = "none", axis.title.y = element_blank())+coord_flip()
-
+g_adj
 # define your own tags
-ggsave(filename=file.path(pathFig, "Clust_eval_benchmark.pdf"),g_adj, width=13, height=13)
+ggsave(filename=file.path("../../papers/FigsReview/", "Clust_eval_benchmark.eps"),g_adj, width=13, height=13)
   
