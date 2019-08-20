@@ -30,5 +30,4 @@ Imports:
   ggplot2,
   kernlab,
   stringr,
-  InterSIM,
-  MOFAtools
+  InterSIM
