@@ -102,6 +102,13 @@ selectVars_sgcca <- lapply(a_sgcca, function(aa) {
   rowSums(aa) %>% abs %>% sort(decreasing = TRUE)  %>% names %>% unique %>% head(20)
 })
 
+fit_CIMLR <- results_meth[["CIMLR"]]$fit
+selectVars_CIMLR <- lapply(1:4, function(ll) {
+  n <- fit_CIMLR$selectfeatures$names[grep(paste("dat",ll, sep=""), fit_CIMLR$selectfeatures$names)]
+  pval <- fit_CIMLR$selectfeatures$pval[grep(paste("dat",ll, sep=""), fit_CIMLR$selectfeatures$names)]
+  n[which(pval<0.01)] %>% stringr::str_remove(paste("_dat",ll, sep=""))
+})
+
 
 col.clust <- RColorBrewer::brewer.pal(6, "Set2")[1:nlevels(true.clust_liver)]
 clust_col = structure(names = c("1", "2", "3","4"),col.clust)
@@ -128,7 +135,8 @@ ha = HeatmapAnnotation(RGCCA = results_meth[["RGCCA"]]$clust,
                        show_legend = rep(FALSE, 9),
                        show_annotation_name = TRUE,
 )
-list_meth_sel <- list(icluster=selectVars_icluster,Mocluster= selectVars_moa, sgcca=selectVars_sgcca)
+list_meth_sel <- list(icluster=selectVars_icluster,Mocluster= selectVars_moa, sgcca=selectVars_sgcca, CIMLR=selectVars_CIMLR)
+
 sapply(names(list_meth_sel), function (mm){
   for( i in 1:length(liver_filter)){
     mat <- liver_filter[[i]][, list_meth_sel[[mm]][[i]]] %>% t
@@ -174,37 +182,34 @@ RA_clustered[RA_clustered$Status == "Representative", ]
 
 
 
+## Venn 
+selectVars_moa <- lapply(a_moa_tmp, function (aa) aa %>% abs %>% sort(decreasing = TRUE)%>% names %>% unique  %>% head(100)) 
+
+selectVars_icluster <- lapply(a_icluster, function (aa) {
+  rowSums(aa) %>% abs %>% sort(decreasing = TRUE)  %>% names %>% unique%>% head(100)}
+)
+
+selectVars_sgcca <- lapply(a_sgcca, function(aa) {
+  rowSums(aa) %>% abs %>% sort(decreasing = TRUE)  %>% names %>% unique%>% head(100)
+})
+
+fit_CIMLR <- results_meth[["CIMLR"]]$fit
+selectVars_CIMLR <- lapply(1:4, function(ll) {
+  n <- fit_CIMLR$selectfeatures$names[grep(paste("dat",ll, sep=""), fit_CIMLR$selectfeatures$names)]
+  pval <- fit_CIMLR$selectfeatures$pval[grep(paste("dat",ll, sep=""), fit_CIMLR$selectfeatures$names)]
+  n[which(pval<0.01)] %>% stringr::str_remove(paste("_dat",ll, sep=""))%>% head(100)
+})
+
+
+cols <- RColorBrewer::brewer.pal(10,"Spectral")[c(7,8,9,10)]
+
 for (ii in 1:4){
 vp <- VennDiagram::venn.diagram(list(Mocluster=selectVars_moa[[ii]],
                                SGCCA= selectVars_sgcca[[ii]],
-                               iCluster= selectVars_icluster[[ii]]
+                               iCluster= selectVars_icluster[[ii]],
+                               CIMLR= selectVars_CIMLR[[ii]]
 ),fill = cols,  filename = NULL, cat.cex=2, cex=2,scaled=FALSE)
-pdf(sprintf("../../papers/Briefings in Bioinformatics/Figs/Venn_liver_%s.pdf", names(liver_filter)[ii]))
+pdf(sprintf("../../papers/FigsReview/Venn_liver_%s.pdf", names(liver_filter)[ii]))
 grid.draw(vp);
 dev.off();
 }
-
-vp <- VennDiagram::venn.diagram(list(Mocluster=selectVars_moa[[2]],
-                               SGCCA= selectVars_sgcca[[2]],
-                               iCluster= selectVars_icluster[[2]]
-), fill = cols,  filename=NULL, cat.cex=2, cex=2,scaled=FALSE)
-grid.newpage()
-pdf(file = "../../Poster/Fig/Venn_BXD_proteo.pdf")
-grid.draw(vp);
-dev.off();
-
-vp <- VennDiagram::venn.diagram(list(Mocluster=selectVars_moa[[3]],
-                               SGCCA= selectVars_sgcca[[3]],
-                               iCluster= selectVars_icluster[[3]]
-), fill = cols,  filename=NULL, cat.cex=2, scaled=FALSE)
-grid.newpage()
-  pdf(file = "../../Poster/Fig/Venn_BXD_RNA.pdf")
-grid.draw(vp);
-dev.off()
-
-vp <- VennDiagram::venn.diagram(list(Mocluster=selectVars_moa[[4]],
-                                     SGCCA= selectVars_sgcca[[4]],
-                                     iCluster= selectVars_icluster[[4]]
-), fill = cols,  filename=NULL, cat.cex=2, scaled=FALSE)
-grid.newpage()
-grid.draw(vp);

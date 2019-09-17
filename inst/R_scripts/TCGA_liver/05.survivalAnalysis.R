@@ -11,7 +11,7 @@ results_meth <- lapply(list.files("inst/extdata/TCGA/liver",
                                   pattern="res",
                                   full.names = TRUE), readRDS)
 meths <- list.files("inst/extdata/TCGA/liver",
-                    pattern="res") %>% gsub(pattern="_res.rds",replacement = "")
+                    pattern="res") %>% stringr::str_remove(pattern="_res.rds")
 names(results_meth) <- meths
 source("inst/R_scripts/TCGA_Liver/01.loadData.R")
 str(liver)
@@ -35,12 +35,17 @@ library(survminer)
 scrs <- list(SGCCA=do.call(cbind, results_meth[["sgcca"]]$fit$Y),
              RGCCA = do.call(cbind, results_meth[["RGCCA"]]$fit$Y),
              MCIA = results_meth[["mcia"]]$fit$mcoa$SynVar,
-            SNF = results_meth[["snf"]]$fit,
-            Kernel = results_meth[["kernel"]]$fit$variates$X,
-            icluster=results_meth[["icluster"]]$fit,
-            intNMF=results_meth[["NMF"]]$fit,
-            moCluster= mogsa::moaScore(results_meth[["mocluster"]]$fit)
-               )
+             SNF = results_meth[["snf"]]$fit,
+             Kernel = results_meth[["kernel"]]$fit$variates$X,
+             MoCluster = mogsa::moaScore(results_meth[["mocluster"]]$fit),
+             icluster=results_meth[["icluster"]]$fit,
+             intNMF=results_meth[["NMF"]]$fit,
+             CIMLR= results_meth[["CIMLR"]]$fit,
+             LRAcluster= t(results_meth[["LRAcluster"]]$fit$coordinate),
+             PINSPLUS= results_meth[["PINSPLUS"]]$fit,
+             ConsensusClustering= results_meth[["ConsensusClustering"]]
+)
+library(NbClust)
 pval_5 <- sapply(names(scrs), function(ii){
   scr <- scrs[[ii]]
   print(ii)
@@ -48,19 +53,36 @@ pval_5 <- sapply(names(scrs), function(ii){
     clust_surv <- scr$clusters
     names(clust_surv) = samples
   }
+  else if(ii=="CIMLR"){
+    clust_surv <- scr$y$cluster
+    names(clust_surv) = samples
+  }
+  else if(ii=="PINSPLUS"){
+    clust_surv <- scr$cluster1
+  }
+  else if(ii=="ConsensusClustering"){
+    clust_surv <- scr$clust
+  }
   else if(ii=="SNF"){
     K <- SNFtool::estimateNumberOfClustersGivenGraph(scr, 2:10) %>% unlist %>% table %>% which.max %>% names() %>% as.numeric
     clust_surv = scr %>% SNFtool::spectralClustering(K)
     names(clust_surv) = colnames(scr)
   }else{
-    res.nbclust <- NbClust(scale(scr), distance = "euclidean",
+    res.nbclust <- NbClust(scr, distance = "euclidean",
                            min.nc = 2, max.nc = 10, 
                            method = "ward.D2", index ="all")
     clust_surv <- res.nbclust$Best.partition
+    if(sum(table(clust_surv)==1)==(length(table(clust_surv))-1)){
+      t <- sapply(1:10, function(k) {
+        scr %>% dist %>% hclust(method = "ward.D2") %>% cutree(k=k) %>% table
+      })
+      id <- which(sapply(t, function (tt) sum(tt==1)<length(tt)-1))[1]
+      clust_surv <- scr %>% dist %>% hclust(method="ward.D2") %>% cutree(k=id)
+    }
   }
   
   table(clust_surv)
-  id_clust1 <- which(table(clust_surv)<00)
+  id_clust1 <- which(table(clust_surv)<2)
   samples_surv <- names(clust_surv)[which(clust_surv %not_in% id_clust1) ]
   data_surv <- (data.frame(clust = clust_surv[samples_surv],
                            stage = clinical_data[samples,]$pathologic_stage[samples_surv] %>% as.character,
@@ -70,10 +92,15 @@ pval_5 <- sapply(names(scrs), function(ii){
   surv_object <- Surv(time = data_surv$time %>% as.character %>% as.numeric,
                       event = data_surv$status %>% as.character %>% as.numeric)
   fit1 <- surv_fit(surv_object ~ clust, data = data_surv)
-  pval_res <- list(meth=ii, pval=surv_pvalue(fit1)$pval, nbByClust=table(clust_surv))
+  sdf <- survdiff(surv_object ~ clust, data = data_surv)
+  p.val <- 1 - pchisq(sdf$chisq, length(sdf$n) - 1)
+  
+  pval_res <- list(meth=ii, pval=p.val, nbByClust=paste(table(clust_surv), collapse=","))
   return(pval_res)
 }) 
 
+
+pval_5 
 
 
 

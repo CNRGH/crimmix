@@ -54,24 +54,29 @@ for(ii in 1:4){
     })
   }
   data_filter <- dat %>% remove_zero
-  cv.CIMLR <- LOO(data_filter, K = 4, method = "CIMLR")
+  cv.CIMLR <- LOO(data_filter, K = 4, method = "CIMLR", it.max = 15)
   saveRDS(cv.CIMLR, sprintf("%s/benchmark%s_CIMLR.rds", pathMethLOO,  ii))
 }
 
-
+for(ii in 1:4){
+  cv.CIMLR <- readRDS(sprintf("%s/benchmark%s_CIMLR.rds", pathMethLOO,  ii))
+  cv <- readRDS(sprintf("%s/benchmark%s.rds", pathMethLOO,  ii))
+  cv[[4]] <- cv.CIMLR
+  saveRDS(cv, sprintf("%s/benchmark%s_v2.rds", pathMethLOO,  ii))
+}
 
 roc_bench <- do.call(rbind, lapply(1:4, function(b){
-  cv <- readRDS(sprintf("%s/benchmark%s.rds", pathMethLOO,  b))
-  names(cv) <- c("SGCCA", "Mocluster", "iCluster")
-  test <- do.call(rbind, lapply(c("SGCCA", "Mocluster", "iCluster", "CIMLR"), function (mm){
+  cv <- readRDS(sprintf("%s/benchmark%s_v2.rds", pathMethLOO,  b))
+  names(cv) <- c("SGCCA", "Mocluster", "iCluster", "CIMLR")
+  counts <- do.call(rbind, lapply(c("SGCCA", "Mocluster", "iCluster", "CIMLR"), function (mm){
     cv_s <- cv[[mm]]
-    
-    extract_pos_s<- sapply(cv_s, function (cv_ss){
+    print(mm)
+    extract_pos_s <- sapply(cv_s, function (cv_ss){
       fit <- cv_ss$fit
       extractPos(fit, mm)
     })
     count_var <- apply(extract_pos_s, 1, function (ll){
-      ll%>% unlist %>% table %>% sort(decreasing=TRUE)/sum(n_by_Clust[[b]]) %>% as.numeric
+      ll%>% unlist %>% table %>% sort(decreasing=TRUE)/length(cv_s)
     })
     
     count_var <- lapply(count_var, as.data.frame)
@@ -82,22 +87,29 @@ roc_bench <- do.call(rbind, lapply(1:4, function(b){
     count_var_dat$method <- mm
     count_var_dat
   }))
-  test$benchmark <- sprintf("Benchmark %s", b)
-  return(test)
+  counts$benchmark <- sprintf("Benchmark %s", b)
+  return(counts)
 }))
 library(ggplot2)
-color <- RColorBrewer::brewer.pal(9, "Spectral")[6:9]
+color <- RColorBrewer::brewer.pal(9, "Spectral")[6:10]
 roc_bench$method <- gsub("iCluster", "iClusterPlus", roc_bench$method)
-roc_bench$method <- factor(roc_bench$method, levels=c("SGCCA", "Mocluster", "iClusterPlus"))
+roc_bench$method <- factor(roc_bench$method, levels=c("SGCCA", "Mocluster", "iClusterPlus", "CIMLR"))
+roc_bench <- roc_bench %>% mutate(data = ifelse(dataset=="dataset 1", "Gaussian",
+                                         ifelse(dataset=="dataset 2", "Binary",
+                                                ifelse(dataset=="dataset 3", "Beta-like", "NA")))) %>% mutate(data=factor(data, level=c("Gaussian", "Binary", "Beta-like")))
+
+
 p <- ggplot(roc_bench, aes(x=method, y=Frequency, fill=method)) +
-  geom_violin()+ scale_fill_manual(values=color)+facet_grid(benchmark~dataset)+theme_bw()+theme(legend.position = "none", axis.text = element_text(size = 15), strip.text.x = element_text(size = 15),strip.text.y = element_text(size = 15), axis.title.x = element_blank())
+  geom_violin()+ scale_fill_manual(values=color)+facet_grid(benchmark~data)+theme_bw()+theme(legend.position = "none", axis.text = element_text(size = 15), strip.text.x = element_text(size = 15),strip.text.y = element_text(size = 15), axis.title.x = element_blank())
 p
-ggsave(p, filename=sprintf("Figs/Loo,violin_plot_benchmark1to4.pdf", b), height=10, width=15)
+ggsave(p, filename=sprintf("../../papers/FigsReview/Loo,violin_plot_benchmark1to4.eps", b), height=10, width=15)
 
 
 ### Compute TPR and FPR post and pre-loo
 library(xtable)
-test <- auc_eval_dat <- do.call(rbind,lapply(1:4, function(ii){
+library(stringr)
+listBenchmark <- sprintf("Benchmark%s", 1:8)
+auc_eval_dat <- do.call(rbind,lapply(1:4, function(ii){
   b <- listBenchmark[ii]
   pathMeth_sub <- R.utils::Arguments$getWritablePath(sprintf("%s/%s", pathMeth, b))
   
@@ -109,9 +121,9 @@ test <- auc_eval_dat <- do.call(rbind,lapply(1:4, function(ii){
   list.sim <- list.files(pathDat_sim, full.names = TRUE) %>% lapply(readRDS)
   regexp <- "[[:digit:]]+"
   
-  trueDat1 <- sapply(list.sim, function (ss) ss$biomark$dat1 %>% unlist %>% unique%>% str_extract(pattern=regexp))
-  trueDat2 <-  sapply(list.sim, function (ss) ss$biomark$dat2 %>% unlist %>% unique%>% str_extract(pattern=regexp))
-  trueDat3 <-  sapply(list.sim, function (ss)  ss$biomark$dat3 %>% unlist %>% unique%>% str_extract(pattern=regexp))
+  trueDat1 <- sapply(list.sim, function (ss) ss$biomark$dat1 %>% unlist %>% unique%>% stringr::str_extract(pattern=regexp))
+  trueDat2 <-  sapply(list.sim, function (ss) ss$biomark$dat2 %>% unlist %>% unique%>% stringr::str_extract(pattern=regexp))
+  trueDat3 <-  sapply(list.sim, function (ss)  ss$biomark$dat3 %>% unlist %>% unique%>% stringr::str_extract(pattern=regexp))
   
   truth <- lapply(1:S, function (ss) list(trueDat1[[ss]], trueDat2[[ss]], trueDat3[[ss]]) )
   truth1 <- truth[[1]]
@@ -137,11 +149,18 @@ test <- auc_eval_dat <- do.call(rbind,lapply(1:4, function(ii){
   all_icluster <- ff[[1]]
   select_var_icluster <- extractPos(all_icluster$fit, "iCluster")%>% lapply(str_extract, pattern=regexp)
   
+  mm <- "CIMLR"
+  print(mm)
+  pp <- list.files(pathMeth_sub, pattern=mm, full.names = TRUE)
+  ff <- readRDS(pp)
+  all_cimlr <- ff[[1]]
+  select_var_cimlr <- extractPos(all_cimlr$fit, "CIMLR")%>% lapply(str_extract, pattern=regexp)
   
   
-  cv <- readRDS(sprintf("%s/%s.rds", pathMethLOO,  tolower(b)))
-  names(cv) <- c("SGCCA", "Mocluster", "iCluster")
-  cv_results <- do.call(rbind, lapply(c("SGCCA", "Mocluster", "iCluster"), function(mm){
+  
+  cv <- readRDS(sprintf("%s/%s_v2.rds", pathMethLOO,  tolower(b)))
+  names(cv) <- c("SGCCA", "Mocluster", "iCluster", 'CIMLR')
+  cv_results <- do.call(rbind, lapply(c("SGCCA", "Mocluster", "iCluster", 'CIMLR'), function(mm){
     cv_s <- cv[[mm]]
     
     extract_pos_s <- sapply(cv_s, function(cv_ss){
@@ -149,7 +168,7 @@ test <- auc_eval_dat <- do.call(rbind,lapply(1:4, function(ii){
       extractPos(fit, mm)
     })
     count_var <- apply(extract_pos_s, 1, function(ll){
-      ll %>% unlist %>% table %>% sort(decreasing = TRUE)/sum(n_by_Clust[[ii]])  
+      ll %>% unlist %>% table %>% sort(decreasing = TRUE)/length(cv_s)
     })
     
     count_var <- lapply(count_var, as.data.frame)
@@ -164,7 +183,12 @@ test <- auc_eval_dat <- do.call(rbind,lapply(1:4, function(ii){
   stable_sgcca <- cv_results %>% filter(method =="SGCCA") %>% dplyr::select(var) %>% pull %>% as.character%>% lapply(str_extract, pattern=regexp)
   stable_mocluster <- cv_results %>% filter(method =="Mocluster") %>% dplyr::select(var) %>% pull %>% as.character%>% lapply(str_extract, pattern=regexp)
   stable_icluster <- cv_results %>% filter(method == "iCluster") %>%dplyr::select(var) %>% pull %>% as.character
-  fpr_func <- function(sv, Truth, sim){
+  stable_cimlr <- cv_results %>% filter(method == "CIMLR") %>%dplyr::select(var) %>% pull %>% as.character%>% lapply(str_extract, pattern=regexp)
+  
+  sim <- list.files(pathDat_sim, full.names = TRUE)[[1]] %>% readRDS
+  
+  
+    fpr_func <- function(sv, Truth, sim){
     (setdiff(sv %>% unlist , Truth %>% unlist) %>% length)/(sum(sapply(sim$data, ncol)) - length(Truth %>% unlist))
   }
   tpr_func <- function(sv, Truth, sim){
@@ -174,20 +198,24 @@ test <- auc_eval_dat <- do.call(rbind,lapply(1:4, function(ii){
   
   fpr_before_loo <- c(sgcca = fpr_func(select_var_sgcca,truth1,sim),
                       moclust = fpr_func(select_var_mocluster,truth1,sim),
-                      icluster = fpr_func(select_var_icluster,truth1,sim))
+                      icluster = fpr_func(select_var_icluster,truth1,sim),
+                      cimlr = fpr_func(select_var_cimlr,truth1,sim))
   
   
   fpr_after_loo <- c(sgcca = fpr_func(stable_sgcca,truth1,sim),
                      moclust = fpr_func(stable_mocluster,truth1,sim),
-                     icluster = fpr_func(stable_icluster,truth1,sim))
+                     icluster = fpr_func(stable_icluster,truth1,sim),
+                     cimlr = fpr_func(stable_cimlr,truth1,sim))
   
   tpr_after_loo <- c(sgcaa = tpr_func(stable_sgcca,truth1,sim),
                      moclust = tpr_func(stable_mocluster,truth1,sim),
-                     icluster = tpr_func(stable_icluster,truth1,sim)
+                     icluster = tpr_func(stable_icluster,truth1,sim),
+                     cimlr = tpr_func(stable_cimlr,truth1,sim)
   )
   tpr_before_loo <- c(sgcca = tpr_func(select_var_sgcca,truth1,sim),
                       moclust = tpr_func(select_var_mocluster,truth1,sim),
-                      icluster = tpr_func(select_var_icluster,truth1,sim))
+                      icluster = tpr_func(select_var_icluster,truth1,sim),
+                      cimlr = tpr_func(select_var_cimlr,truth1,sim))
   r <- cbind(cbind(fpr_before = fpr_before_loo, fpr_after = fpr_after_loo) ,
              cbind(tpr_before = tpr_before_loo, tpr_after = tpr_after_loo)) %>% as.data.frame
   
@@ -196,29 +224,30 @@ test <- auc_eval_dat <- do.call(rbind,lapply(1:4, function(ii){
   r
 }))
 
-
-test2 <- test %>%  gather(`fpr_before`, `fpr_after`, key = state_fpr, value = fpr) %>% gather(`tpr_before`, `tpr_after`, key = state_tpr, value = tpr) 
-test2 <- test2 %>% mutate(state_fpr=factor(state_fpr, levels=c("fpr_before","fpr_after")), 
+library(tidyr)
+auc_eval_dat2 <- auc_eval_dat %>%  gather(`fpr_before`, `fpr_after`, key = state_fpr, value = fpr) %>% gather(`tpr_before`, `tpr_after`, key = state_tpr, value = tpr) 
+auc_eval_dat2 <- auc_eval_dat2 %>% mutate(state_fpr=factor(state_fpr, levels=c("fpr_before","fpr_after")), 
                           state_tpr=factor(state_tpr, levels=c("tpr_before","tpr_after"))) 
-test2$method <- gsub("icluster", "iClusterPlus", test2$method)
-test2$method <- gsub("moclust", "MoCluster", test2$method)
-test2$method <- gsub("sgcca", "SGCCA", test2$method)
-test2$method <- factor(test2$method, levels=c("SGCCA", "MoCluster", "iClusterPlus"))
-colnames(test2)
+auc_eval_dat2$method <- gsub("icluster", "iClusterPlus", auc_eval_dat2$method)
+auc_eval_dat2$method <- gsub("moclust", "MoCluster", auc_eval_dat2$method)
+auc_eval_dat2$method <- gsub("sgcca", "SGCCA", auc_eval_dat2$method)
+auc_eval_dat2$method <- gsub("cimlr", "CIMLR", auc_eval_dat2$method)
+auc_eval_dat2$method <- factor(auc_eval_dat2$method, levels=c("SGCCA", "MoCluster", "iClusterPlus", "CIMLR"))
+colnames(auc_eval_dat2)
 
-g_fpr <- test2 %>% ggplot(aes(x=method, y=fpr, fill=state_fpr))+geom_bar(stat="identity", position=position_dodge())+facet_wrap(.~noise)+theme_bw()+theme(legend.position = "top", axis.text = element_text(size = 15), strip.text.x = element_text(size = 15), axis.title.x = element_blank())+
+g_fpr <- auc_eval_dat2 %>% ggplot(aes(x=method, y=fpr, fill=state_fpr))+geom_bar(stat="identity", position=position_dodge())+facet_wrap(.~noise)+theme_bw()+theme(legend.position = "top", axis.text = element_text(size = 15), strip.text.x = element_text(size = 15), axis.title.x = element_blank())+
   scale_fill_discrete(name="",
                       breaks=c("fpr_before", "fpr_after"),
                       labels=c("Raw", "Pruning by jackknife"))+ylab("False Positive Rate")
 g_fpr
-ggsave(g_fpr, filename = file.path(pathFig, "FPR_LOO.pdf"), width=10, height=7)
-g_tpr <- test2 %>% ggplot(aes(x=method, y=tpr, fill=state_tpr))+geom_bar(stat="identity", position=position_dodge())+facet_wrap(.~noise)+theme_bw()+theme(legend.position = "top", axis.text = element_text(size = 15), strip.text.x = element_text(size = 15), axis.title.x = element_blank())+
+ggsave(g_fpr, filename = file.path("../../papers/FigsReview/FPR_LOO.pdf"), width=10, height=7)
+g_tpr <- auc_eval_dat2 %>% ggplot(aes(x=method, y=tpr, fill=state_tpr))+geom_bar(stat="identity", position=position_dodge())+facet_wrap(.~noise)+theme_bw()+theme(legend.position = "top", axis.text = element_text(size = 15), strip.text.x = element_text(size = 15), axis.title.x = element_blank())+
   scale_fill_discrete(name="",
                       breaks=c("tpr_before", "tpr_after"),
                       labels=c("Raw", "Pruning by jackknife"))+ylab("True Positive Rate")
 
 g_tpr
-ggsave(g_tpr, filename = file.path(pathFig, "TPR_LOO.pdf"), width=10, height=7)
+ggsave(g_tpr, filename = file.path("../../papers/FigsReview/TPR_LOO.pdf"), width=10, height=7)
 
 
 
@@ -251,5 +280,16 @@ sapply(1:4, function(ii){
   ff <- readRDS(pp)
   all_icluster <- ff[[1]]
   select_var_icluster <- extractPos(all_icluster$fit, "iCluster")%>% lapply(str_extract, pattern=regexp)
-  c(mo = select_var_mocluster %>% sapply(length), sgcca= select_var_sgcca %>% sapply(length), iclust=select_var_icluster %>% sapply(length))
+  
+  mm <- "CIMLR"
+  print(mm)
+  pp <- list.files(pathMeth_sub, pattern=mm, full.names = TRUE)
+  ff <- readRDS(pp)
+  all_cimlr <- ff[[1]]
+  select_var_cimlr <- extractPos(all_cimlr$fit, "CIMLR")%>% lapply(str_extract, pattern=regexp)
+  
+  c(mo = select_var_mocluster , 
+    sgcca= select_var_sgcca ,
+    iclust=select_var_icluster , 
+    cimlr=select_var_cimlr )%>% sapply(length)
 }) %>% xtable::xtable()
