@@ -83,4 +83,23 @@ Tenenhaus, A., Philippe, C., Guillemot, V., et al.
   Meng, C., Kuster, B., Culhane, A. C., & Gholami, A. M. (2014).
   A multivariate approach to the integration of multi-omics datasets.
   BMC bioinformatics, 15(1), 162
+  
+  Nguyen H, Shrestha S, Draghici S, Nguyen T.
+  PINSPlus: A tool for tumor subtype discovery in integrated genomic data.
+  Bioinformatics, 2018
+ 
+ Wilkerson, M.D., Hayes, D.N.
+ ConsensusClusterPlus: a class discovery tool with confidence assessments and item tracking
+ Bioinformatics, 2010 Jun 15;26(12):1572-3.
+ 
+ Wu, D., Wang, D., Zhang, M. Q., & Gu, J. 
+ Fast dimension reduction and integrative clustering of multi-omics 
+ data using low-rank approximation: application to cancer molecular 
+ classification. 
+ BMC genomics, 16(1), 1022.
+ 
+ Ramazzotti, D., Lal, A., Wang, B., Batzoglou, S., & Sidow, A. (2018). 
+ Multi-omic tumor data reveal diversity of molecular mechanisms that 
+ correlate with survival. 
+ Nature communications, 9(1), 4453.
 }

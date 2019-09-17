@@ -2,7 +2,7 @@
 title: "Running multi-omics Integrating methods with CrIMMix"
 author: "Morgane Pierre-Jean"
 date: "`r Sys.Date()`"
-output: rmarkdown::html_vignette
+output: rmarkdown::pdf_document
 bibliography: bib.bib
 vignette: >
   %\VignetteIndexEntry{Running multi-omics Integrating methods}

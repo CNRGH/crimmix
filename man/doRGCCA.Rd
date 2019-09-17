@@ -5,7 +5,7 @@
 \title{doRGCCA}
 \usage{
 doRGCCA(data, K, C = 1 - diag(length(data)), ncomp = rep(1,
-  length(data)), scheme = "centroid")
+  length(data)), scheme = "centroid", tau = rep(1, length(data)))
 }
 \arguments{
 \item{data}{List of matrices.}

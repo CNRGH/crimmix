@@ -1,4 +1,4 @@
-#########################################################################################################################
+  #########################################################################################################################
 ## Script for time evaluation
 ### This script setups the parameters for the simulation
 #########################################################################################################################
@@ -175,16 +175,15 @@ time_res$meth <- gsub("NMF", "intNMF", time_res$meth)
 time_res$meth <- gsub("Mocluster", "MoCluster", time_res$meth)
 time_res$meth <- gsub("Kernel", "mixKernel", time_res$meth)
 time_res$meth <- gsub("iCluster", "iClusterPlus", time_res$meth)
-time_res$meth <- gsub("ConsensusClustering", "CC", time_res$meth)
 
 
-methods <- c("SNF", "CIMLR", "LRAcluster", "PINSPLUS", "CC","RGCCA", "MCIA", "intNMF", "mixKernel","SGCCA", "MoCluster","iClusterPlus")
+methods <- c("SNF", "CIMLR", "LRAcluster", "PINSPLUS", "ConsensusClustering","RGCCA", "MCIA", "intNMF", "mixKernel","SGCCA", "MoCluster","iClusterPlus")
 
 time_res$meth <- time_res$meth %>% factor(levels=methods)
 
 
 pathFigs <- R.utils::Arguments$getWritablePath(sprintf("../../papers/FigsReview/"))
 
-g_time <- time_res %>% ggplot(aes(x=meth, y=log10(time)))+geom_boxplot(aes(fill=N, color=N))+scale_fill_brewer(palette="Set1")+scale_color_brewer(palette="Set1")+ylab("log(time (s))")+xlab("Methods")+theme_bw()+theme( axis.title.x = element_blank())+ guides(fill=guide_legend(title="n"), color=guide_legend(title="n"))
+g_time <- time_res %>% ggplot(aes(x=meth, y=log(time)))+geom_boxplot(aes(fill=N, color=N))+scale_fill_brewer(palette="Set1")+scale_color_brewer(palette="Set1")+ylab("log(time (s))")+xlab("Methods")+theme_bw()+theme( axis.title.x = element_blank(), axis.text=element_text(size=12, angle = 90, hjust = 1))+ guides(fill=guide_legend(title="n"), color=guide_legend(title="n"))
 g_time
-ggsave(g_time, filename = sprintf("%s/Time_comp.pdf", pathFigs))
+ggsave(g_time, filename = sprintf("../../papers/FigsReview/Time_comp.eps", pathFigs))

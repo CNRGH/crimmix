@@ -24,8 +24,8 @@
 #' @importFrom RGCCA rgcca
 #' @export
 doRGCCA <- function (data, K, C=1-diag(length(data)),
-                     ncomp=rep(1, length(data)), scheme="centroid"){
-  tau = rep(1,length(data))
+                     ncomp=rep(1, length(data)), scheme="centroid", tau = rep(1,length(data))){
+  
   ## rgcca algorithm using the dual formulation for X1 and X2
   ## and the dual formulation for X3
   result.rgcca = data %>% rgcca(C, tau, ncomp = ncomp,

@@ -102,7 +102,7 @@ doROC_Moa <- function(truth, fit){
     gsub(sprintf("_dat%s", kk), "", selectVars_1[idx])
   })
   regexp <- "[[:digit:]]+"
-  
+  truth <- lapply(truth, stringr::str_extract, pattern=regexp)
   test <- rowSums(abs(a))
   idx <- which(test!=0)
   test_o <- sort(test[idx], decreasing = TRUE) %>% names
@@ -142,7 +142,7 @@ doROC_SGCCA <- function(truth, fit){
     idx <- which(tt!=0)
     sort(tt[idx], decreasing = TRUE) %>% names %>% str_extract(pattern=regexp)
   })
-
+  truth <- lapply(truth, stringr::str_extract, pattern=regexp)
   TPR_list <- lapply(1:length(a), function(ii){
     tt_o <- test_o[[ii]]
     sapply(1:length(tt_o), function (tt){
@@ -176,7 +176,7 @@ doROC_MOFA <- function(truth, fit){
     sort(tt[idx], decreasing = TRUE) %>% names %>% str_extract(pattern=regexp)
   })
   denom_tp <- sapply(truth, length)
-  
+  truth <- lapply(truth, stringr::str_extract, pattern=regexp)
   TPR_list <- lapply(1:length(a), function(ii){
     tt_o <- test_o[[ii]]
     sapply(1:length(tt_o), function (tt){
@@ -200,7 +200,7 @@ doROC_RGCCA <- function(truth, fit){
   a <- fit$a
   J <- sapply(a, nrow)
   regexp <- "[[:digit:]]+"
-  
+  truth <- lapply(truth, stringr::str_extract, pattern=regexp)
   selectVars <- lapply(a, function(aa) which(rowSums(aa) != 0) %>% names)
   test <- lapply(a, function(aa) rowSums(abs(aa)))
   test_o <- lapply(test, function (tt){
@@ -233,7 +233,7 @@ doROC_MCIA<- function(truth, fit){
   a <- lapply(coas, function (cc) cc$li)
   J <- sapply(a, nrow)
   regexp <- "[[:digit:]]+"
-  
+  truth <- lapply(truth, stringr::str_extract, pattern=regexp)
   test <- lapply(a, function(aa) rowSums(abs(aa)))
   test_o <- lapply(test, function (tt){
     idx <- which(tt!=0)
@@ -263,7 +263,7 @@ doROC_intNMF <- function(truth, fit){
   a <- fit$H
   J <- sapply(a, ncol)
   regexp <- "[[:digit:]]+"
-  
+  truth <- lapply(truth, stringr::str_extract, pattern=regexp)
   test <- lapply(a, function(aa) colSums((aa)))
   test_o <- lapply(test, function (tt){
     idx <- which(tt!=0)
