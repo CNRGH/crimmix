@@ -35,10 +35,10 @@ LOO <- function(data, method, it.max=NULL,mc.cores=1, ...){
   if(is.null(it.max)){
     N <- n
   }else{
+    N <- it.max
     if(N>n){
      stop(sprintf("it.max needs to be smaller than %s", n))
     }
-    N <- it.max
   }
 
   cv <- parallel::mclapply(sample(1:N), function(i){
