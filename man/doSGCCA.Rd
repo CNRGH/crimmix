@@ -4,8 +4,14 @@
 \alias{doSGCCA}
 \title{doSGCCA}
 \usage{
-doSGCCA(data, K, C = 1 - diag(length(data)), c1 = rep(1, length(data)),
-  ncomp = rep(1, length(data)), scheme = "centroid")
+doSGCCA(
+  data,
+  K,
+  C = 1 - diag(length(data)),
+  c1 = rep(1, length(data)),
+  ncomp = rep(1, length(data)),
+  scheme = "centroid"
+)
 }
 \arguments{
 \item{data}{List of matrices.}

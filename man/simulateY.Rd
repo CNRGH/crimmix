@@ -4,9 +4,15 @@
 \alias{simulateY}
 \title{Simulate various type of data}
 \usage{
-simulateY(nclust = 4, n_byClust = 20, J, prop = 0.01, noise = 0.1,
-  flavor = c("normal", "beta", "binary"), params = list(c(mean = 1, sd
-  = 1)))
+simulateY(
+  nclust = 4,
+  n_byClust = 20,
+  J,
+  prop = 0.01,
+  noise = 0.1,
+  flavor = c("normal", "beta", "binary"),
+  params = list(c(mean = 1, sd = 1))
+)
 }
 \arguments{
 \item{nclust}{A numeric value specifying the number of cluster (integer)}
