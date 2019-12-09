@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 Package: CrIMMix
 Type: Package
 Title: Multi-omics Integration
@@ -32,3 +33,39 @@ Imports:
   stringr,
   InterSIM,
   MOFAtools
+||||||| merged common ancestors
+=======
+Package: CrIMMix
+Type: Package
+Title: Multi-omics Integration
+Version: 0.1.9-9000
+Author: Morgane Pierre-Jean
+Maintainer: Morgane Pierre-Jean <mpierrejean.pro@gmail.com>
+Description: CrIMMix is an package to CompaRe Intergating Methods for Multi-omICS analysis. It provides simulations but also to evaluate various integrating methods.
+License: CeCILL (>= 2.1)
+Encoding: UTF-8
+LazyData: true
+RoxygenNote: 6.1.1
+Suggests:
+    knitr,
+    ComplexHeatmap,
+    RColorBrewer,
+    circlize,
+    tibble
+VignetteBuilder: knitr
+Imports:
+  RGCCA,
+  SNFtool,
+  dplyr,
+  IntNMF,
+  mogsa,
+  iClusterPlus,
+  mixKernel,
+  mclust,
+  omicade4,
+  Matrix,
+  ggplot2,
+  kernlab,
+  stringr,
+  InterSIM
+>>>>>>> origin/review

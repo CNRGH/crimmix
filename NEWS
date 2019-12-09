@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 Package: CrIMMix
 =============
 Version: 0.1.8-9000 [2019-03-18]
@@ -38,3 +39,50 @@ Version: 0.1.2-9000 [2018-09-12]
 
 Version: 0.1.1-9000 [2018-09-11]
   o Created
+||||||| merged common ancestors
+=======
+Package: CrIMMix
+=============
+Version: 0.1.9-9000 [2019-07-15]
+ o Update documentation
+ o Add PINSPLUS, Consensus clustering, LRA cluster, CIMLR according to reviewer's comments
+ 
+Version: 0.1.8-9000 [2019-03-18]
+  o Moved data to CrIMMixdata package
+  o Renamed to CrIMMix
+  o LOO performance
+  o Bug fixed for roc evaluation of iCluster 
+
+Version: 0.1.7-9000 [2019-01-18]
+  o ROC curves for all methods
+
+Version: 0.1.6-9000 [2018-10-26]
+  o updated Diabete data
+
+Version: 0.1.6-9000 [2018-10-18]
+  o added extdata
+
+Version: 0.1.5-9000 [2018-09-26]
+  o Modified simulateY for beta distribution
+  o Added stop for not expected params in simulateY function
+  o Added ROC eval  and Loo functions
+  o remove inst/exdata
+
+Version: 0.1.4-9000 [2018-09-20]
+  o Added data in inst/extdata for BIB paper
+    o BXD
+    o diabete
+    o TCGA/Ovarian
+  o bug fixed in doMoa
+
+Version: 0.1.3-9000 [2018-09-13]
+  o Change default parameters in doMOFA
+  o TryCatch error MOFA when the model does not converge
+
+
+Version: 0.1.2-9000 [2018-09-12]
+  o Added doMCIA
+
+Version: 0.1.1-9000 [2018-09-11]
+  o Created
+>>>>>>> origin/review
